@@ -99,7 +99,7 @@ Class FoundGuiElement
 
 GetPath(filename)
 {
-    Return A_ScriptDir . "\gui\" . filename
+    Return A_ScriptDir . filename
 }
 
 GetDimensions(path)

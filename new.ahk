@@ -8,6 +8,13 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 video_inactive := New SearchGuiElement("video-inactive.png")
 
+s1 := New SearchGuiElement("\gui\video-panel\composite.png")
+s2 := New SearchGuiElement("\gui\video-panel\transform.png")
+s3 := New SearchGuiElement("\gui\video-panel\cropping.png")
+s4 := New SearchGuiElement("\gui\video-panel\retime-and-scaling.png")
+
+video_panel := [s1, s2, s3, s4]
+
 ; === MENU ===
 
 Menu, ResolveMenu, Add, Import Desktop, ImportDesktopHandler
@@ -51,17 +58,21 @@ ImportFiles(folder)
 Zoom()
 {
     global video_inactive
+    global video_panel
 
     start_pos := GetMousePosition()
     Send, {CtrlDown}9{CtrlUp}
-    v2 := video_inactive.Find()
-    if(v2 != False)
+    
+    for i, element in video_panel
     {
-        center := v2.GetCenter()
-        MouseClick(center)
-    }
-    Else
-    {
-        MsgBox, Not Found
+        res := element.Find()
+        if(res == False)
+        {
+            MsgBox, NotFound
+        }
+        Else
+        {
+            res.Print()
+        }
     }
 }

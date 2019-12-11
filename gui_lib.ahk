@@ -4,23 +4,22 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #Include Gdip_All.ahk
 
 
+
 ; === CLASSES ===
 
 Class Point
 {
-    __New(x, y)
+    __New(left, top)
     {
-        this.x := x,
-        this.y := y,
+        this.left := left,
+        this.top := top,
     }
 
-    Print()
+    ToString()
     {
-        MsgBox % "Point: " this.x ", " this.y
+        Return "Point: " this.left ", " this.top
     }
 }
-
-
 
 Class Dimensions
 {
@@ -30,112 +29,135 @@ Class Dimensions
         this.height := height
     }
 
-    Print()
+    ToString()
     {
-        MsgBox % "Dimensions: " this.width ", " this.height
+        Return "Dimensions: " this.width ", " this.height
     }
 }
 
-
-
-Class SearchGuiElement
+Class Rect
 {
-    __New(filename)
+    __New(leftTop, dimensions)
     {
-        this.fullPath := GetPath(filename)      
-        this.dimensions := GetDimensions(this.fullPath) 
+        this.leftTop := leftTop
+        this.dimensions := dimensions
     }
 
-    Find()
+    FromPoints(leftTop, rightBottom)
     {
-        corner := FindOnFullScreen(this.fullPath)
-        if(corner != False)
-        {
-            Return new FoundGuiElement(this, corner)
-        }
-        Else
-        {
-            return False
-        }
+        width := rightBottom.left - leftTop.left
+        height := rightBottom.top - leftTop.top
+        Return new Rect(leftTop, new Dimensions(width, height))
     }
 
-    Print()
+    GetRightBottom()
     {
-        msg := "SearchGuiElement: " . this.fullPath
-        msg := msg . "`ndimensions: " . this.dimensions.width . ", " this.dimensions.height
-        MsgBox % msg
-    }
-}
-
-
-
-Class FoundGuiElement
-{
-    __New(element, corner)
-    {
-        this.element := element
-        this.corner := corner
+        x := this.leftTop.left + this.dimensions.width
+        y := this.leftTop.top + this.dimensions.height
+        Return new Point(x, y)
     }
 
     GetCenter()
     {
-        x := this.corner.x + 0.5 * this.element.dimensions.width
-        y := this.corner.y + 0.5 * this.element.dimensions.height
+        x := this.leftTop.left + 0.5 * this.dimensions.width
+        y := this.leftTop.top + 0.5 * this.dimensions.height
         Return new Point(x, y)
     }
 
-    Print()
+    ToString()
     {
-        msg := "SearchGuiElement: " . this.element.fullPath
-        msg := msg . "`ndimensions: " . this.element.dimensions.width . ", " this.element.dimensions.height
-        msg := msg . "`ncorner: " . this.corner.x . ", " this.corner.y
-        MsgBox % msg
+        msg := "Rect: " . this.leftTop.left . ", " . this.leftTop.top
+        msg := msg . ", " . this.dimensions.width ", " . this.dimensions.height
+        Return msg
+    }
+}
+
+Class UiElement
+{
+    __New(path)
+    {
+        this.path := path
+        this.dimensions := GetDimensions(path)
+    }
+
+    FindIn(area)
+    {
+        leftTop := FindImage(this.path, area)
+        if(leftTop)
+        {
+            Return new Rect(leftTop, this.dimensions)
+        }
+        else
+        {
+            Return false
+        }
+    }
+
+    ToString()
+    {
+        Return this.path
     }
 }
 
 
 
-;=== HELPERS ===
+;=== FUNCTIONS ===
 
-GetPath(filename)
+GetMousePosition()
 {
-    Return A_ScriptDir . filename
+    MouseGetPos, left, top
+    Return new Point(left, top)
+}
+
+MouseMoveAbsolute(point)
+{
+    MouseMove, point.left, point.top   
+}
+
+MouseLeftClickAbsolute(point)
+{
+    MouseClick, left, point.left, point.top, 1, 0
 }
 
 GetDimensions(path)
 {
     pToken := Gdip_StartUp()        
     pBitmap := Gdip_CreateBitmapFromFile(path)
-    Gdip_GetImageDimensions(pBitmap, w, h)
+    Gdip_GetImageDimensions(pBitmap, width, height)
     Gdip_DisposeImage(pBitmap)
     Gdip_ShutDown(pToken)
         
-    Return New Dimensions(w, h)
+    Return New Dimensions(width, height)
 }
 
-FindOnFullScreen(path)
+FindImage(path, area)
 {
-    ImageSearch, found_x, found_y, 0, 0, 1980, 1020, %path%
-    if (ErrorLevel = 2)
-        MsgBox, Cannot conduct search
-    else if (ErrorLevel = 1)
+    left := area.leftTop.left
+    top := area.leftTop.top
+    right := area.GetRightBottom().left
+    bottom := area.GetRightBottom().top
+
+    try
+    {
+        ImageSearch, found_x, found_y, left, top, right, bottom, %path%
+    }
+    catch e
+    {
+        e.Message := "Cannot conduct search on: " path
+        throw e
+    }
+    
+    if (ErrorLevel = 1)
+    {
         Return false
+    }
     else
+    {
         Return new Point(found_x, found_y)
+    }
 }
 
-GetMousePosition()
+FindImageFullScreen(path)
 {
-    MouseGetPos, x, y
-    Return new Point(x, y)
-}
-
-MouseMove(point)
-{
-    MouseMove, point.x, point.y, 0
-}
-
-MouseClick(point)
-{
-    MouseClick, left, point.x, point.y, 1, 0
+    Return FindImage(path, new Rect(new Point(0,0), new Dimensions(1920,1080)))
 }

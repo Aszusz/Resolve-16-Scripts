@@ -58,6 +58,9 @@ Test()
     start := GetMousePosition()
     OpenInspector()
     InspectorScrollTop()
-    type := GetInspectorType()
+    if(AssertVideo())
+    {
+
+    }
     MouseMoveAbsolute(start)
 }

@@ -7,8 +7,7 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 ; === GLOBAL VARIABLES ===
 
 inspector_type_area := new Rect(new Point(1545, 79), new Dimensions(248, 37))
-inspector_scroll_point := new Point(1710, 300)
-inspector_area := new Rect(new Point(1500, 79), new Dimensions(420, 422))
+inspector_area := new Rect(new Point(1500, 79), new Dimensions(420, 622))
 
 complex_video := new UiElement(A_ScriptDir . "\gui\inspector\complex-video.png")
 complex_audio := new UiElement(A_ScriptDir . "\gui\inspector\complex-audio.png")
@@ -18,14 +17,16 @@ simple_audio := new UiElement(A_ScriptDir . "\gui\inspector\simple-audio.png")
 video_inactive := new UiElement(A_ScriptDir . "\gui\video-inactive.png")
 audio_inactive := new UiElement(A_ScriptDir . "\gui\audio-inactive.png")
 
+transform_panel := new UiElement(A_ScriptDir . "\gui\video-panel\transform-panel.png")
+
 
 ; === FUNCTIONS ===
 
 InspectorScrollTop()
 {
-    global inspector_scroll_point
+    global inspector_area
 
-    MouseMoveAbsolute(inspector_scroll_point)
+    MouseMoveAbsolute(inspector_area.GetCenter())
 
     Loop, 15
     {
@@ -77,6 +78,7 @@ AssertVideo()
         rect := video_inactive.FindIn(inspector_area)
         point := rect.GetCenter()
         MouseLeftClickAbsolute(point)
+        InspectorScrollTop()
     }
 
     if(type == "COMPLEX_AUDIO" || type == "COMPLEX_VIDEO" || type == "SIMPLE_VIDEO")
@@ -100,6 +102,7 @@ AssertAudio()
         rect := audio_inactive.FindIn(inspector_area)
         point := rect.GetCenter()
         MouseLeftClickAbsolute(point)
+        InspectorScrollTop()
     }
 
     if(type == "COMPLEX_VIDEO" || type == "COMPLEX_AUDIO" || type == "SIMPLE_AUDIO")
@@ -110,4 +113,12 @@ AssertAudio()
     {
         Return False
     }
+}
+
+FindTransformPanel()
+{
+    global inspector_area, transform_panel
+
+    panel := transform_panel.ScrollInto(inspector_area, 15)
+    MsgBox % panel.ToString()
 }

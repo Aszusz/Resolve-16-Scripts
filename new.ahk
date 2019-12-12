@@ -60,7 +60,7 @@ Test()
     InspectorScrollTop()
     if(AssertVideo())
     {
-
+        FindTransformPanel()
     }
     MouseMoveAbsolute(start)
 }

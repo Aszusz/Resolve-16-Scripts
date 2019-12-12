@@ -6,72 +6,58 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 ; === GLOBAL VARIABLES ===
 
-video_active := New UiElement(A_ScriptDir . "\gui\video-active.png")
-audio_active := New UiElement(A_ScriptDir . "\gui\audio-active.png")
+inspector_type_area := new Rect(new Point(1545, 79), new Dimensions(248, 37))
+inspector_scroll_point := new Point(1710, 300)
 
-composite := New UiElement(A_ScriptDir . "\gui\video-panel\composite.png")
-transformation := New UiElement(A_ScriptDir . "\gui\video-panel\transform.png")
-cropping := New UiElement(A_ScriptDir . "\gui\video-panel\cropping.png")
-dynamic_zoom := New UiElement(A_ScriptDir . "\gui\video-panel\dynamic-zoom.png")
-stabilization := New UiElement(A_ScriptDir . "\gui\video-panel\stabilization.png")
-retime_and_scaling := New UiElement(A_ScriptDir . "\gui\video-panel\retime-and-scaling.png")
-lens_correction := New UiElement(A_ScriptDir . "\gui\video-panel\lens-correction.png")
-
-video_panel := [composite, transformation, cropping, dynamic_zoom, stabilization, retime_and_scaling, lens_correction]
-
-clip_volume := New UiElement(A_ScriptDir . "\gui\audio-panel\clip-volume.png")
-clip_pan := New UiElement(A_ScriptDir . "\gui\audio-panel\clip-pan.png")
-clip_pitch := New UiElement(A_ScriptDir . "\gui\audio-panel\clip-pitch.png")
-clip_equalizer := New UiElement(A_ScriptDir . "\gui\audio-panel\clip-equalizer.png")
-freq := New UiElement(A_ScriptDir . "\gui\audio-panel\freq.png")
-
-audio_panel := [clip_volume, clip_pan, clip_pitch, clip_equalizer, freq]
-
-inspector_area := Rect.FromPoints(new Point(1500, 100), new Point(1920, 650))
-full_screen := new Rect(new Point(0,0), new Dimensions(1920, 1080))
-
+complex_video := new UiElement(A_ScriptDir . "\gui\inspector\complex-video.png")
+complex_audio := new UiElement(A_ScriptDir . "\gui\inspector\complex-audio.png")
+simple_video := new UiElement(A_ScriptDir . "\gui\inspector\simple-video.png")
+simple_audio := new UiElement(A_ScriptDir . "\gui\inspector\simple-audio.png")
 
 
 ; === FUNCTIONS ===
 
-FindAny(elements)
+InspectorScrollTop()
 {
-    global inspector_area
+    global inspector_scroll_point
 
-    for i, element in elements
+    MouseMoveAbsolute(inspector_scroll_point)
+
+    Loop, 15
     {
-        ;MsgBox % .ToString()
-        r := element.FindIn(inspector_area)
-        if(r)
-        {
-            Return true
-        }
+        Send {WheelUp}
+        Sleep, 1
     }
-    Return false
 }
 
-GetCurrentPanel()
+OpenInspector()
 {
-    global inspector_area, video_active, audio_active, video_panel, audio_panel
+    Send ^{9}
+}
 
-    if(video_active.FindIn(inspector_area))
+GetInspectorType()
+{
+    global inspector_type_area
+    global complex_video, complex_audio, simple_video, simple_audio
+
+    if(complex_video.FindIn(inspector_type_area))
     {
-        Return "COMPOUND_VIDEO"
+        Return "COMPLEX_VIDEO"
     }
-    else if(audio_active.FindIn(inspector_area))
+    else if(complex_audio.FindIn(inspector_type_area))
     {
-        Return "COMPOUND_AUDIO"
+        Return "COMPLEX_AUDIO"
     }
-    else if(FindAny(video_panel))
+    else if(simple_video.FindIn(inspector_type_area))
     {
         Return "SIMPLE_VIDEO"
     }
-    else if(FindAny(audio_panel))
+    else if(simple_audio.FindIn(inspector_type_area))
     {
         Return "SIMPLE_AUDIO"
     }
     else
     {
-        Throw Exception("Inspector is not active")
+        Return "NO_INSPECTOR"
     }
 }

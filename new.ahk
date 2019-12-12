@@ -1,8 +1,16 @@
-﻿#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-;#Warn  ; Enable warnings to assist with detecting common errors.
-SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
-SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+﻿#NoEnv
 #Include resolve_helper.ahk
+#Include gui_lib.ahk
+
+SendMode Input
+SetWorkingDir %A_ScriptDir%
+CoordMode, ToolTip, Client
+CoordMode, Pixel, Client
+CoordMode, Mouse, Client
+CoordMode, Caret, Client
+CoordMode, Menu, Client
+
+
 
 ; === MENU ===
 
@@ -26,8 +34,7 @@ ImportDesktopHandler:
     Return
 
 TestHandler:
-    panel := GetCurrentPanel()
-    MsgBox % panel
+    Test()
     
     
 
@@ -44,4 +51,13 @@ ImportFiles(folder)
     Send, {Tab}{Tab}
     Send, {ctrl down}a{ctrl up}
     Send, {Enter}
+}
+
+Test()
+{
+    start := GetMousePosition()
+    OpenInspector()
+    InspectorScrollTop()
+    type := GetInspectorType()
+    MouseMoveAbsolute(start)
 }

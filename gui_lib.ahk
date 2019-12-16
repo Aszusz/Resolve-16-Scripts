@@ -111,12 +111,17 @@ GetMousePosition()
 
 MouseMoveAbsolute(point)
 {
-    MouseMove, point.left, point.top   
+    MouseMove, point.left, point.top, 0   
 }
 
 MouseLeftClickAbsolute(point)
 {
     MouseClick, left, point.left, point.top, 1, 0
+}
+
+MouseLeftDoubleClickAbsolute(point)
+{
+    MouseClick, left, point.left, point.top, 2, 0
 }
 
 GetDimensions(path)

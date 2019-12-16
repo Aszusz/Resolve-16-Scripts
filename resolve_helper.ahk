@@ -4,54 +4,11 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #Include gui_lib.ahk
 
-Class Panel
-{
-    __New(header_collapsed, header_expanded, first_item)
-    {
-        this.header_collapsed := header_collapsed
-        this.header_expanded := header_expanded
-        this.first_item := first_item
-    }
-
-    ScrollIntoView(area, max_scrolls)
-    {
-        scrollPoint := area.GetCenter()
-        MouseMoveAbsolute(scrollPoint)
-
-        scrolls := 0
-        collapsed := this.header_collapsed.FindIn(area)
-        expanded := this.header_expanded.FindIn(area)
-        While(!collapsed && !expanded && scrolls < max_scrolls) 
-        {            
-            Send, {WheelDown}
-            scrolls++     
-            collapsed := this.header_collapsed.FindIn(area)
-            expanded := this.header_expanded.FindIn(area)       
-        } 
-
-        if(collapsed)
-        {
-            MouseLeftClickAbsolute(collapsed.GetCenter())
-            MouseLeftClickAbsolute(collapsed.GetCenter())
-            Sleep, 1000
-        }
-
-        first_item := this.first_item.FindIn(area)
-        While(!first_item && scrolls < max_scrolls) 
-        {            
-            Send, {WheelDown}
-            scrolls++     
-            first_item := this.first_item.FindIn(area)       
-        }
-
-        Return first_item
-    }
-}
-
 ; === GLOBAL VARIABLES ===
 
 inspector_type_area := new Rect(new Point(1545, 79), new Dimensions(248, 37))
 inspector_area := new Rect(new Point(1500, 79), new Dimensions(420, 622))
+max_scrolls := 20
 
 complex_video := new UiElement(A_ScriptDir . "\gui\inspector\complex-video.png")
 complex_audio := new UiElement(A_ScriptDir . "\gui\inspector\complex-audio.png")
@@ -63,7 +20,8 @@ audio_inactive := new UiElement(A_ScriptDir . "\gui\audio-inactive.png")
 
 tp_header_collpased := new UiElement(A_ScriptDir . "\gui\video-panel\tp-header-collapsed.png")
 tp_header_expanded := new UiElement(A_ScriptDir . "\gui\video-panel\tp-header-expanded.png")
-tp_zoom := new UiElement(A_ScriptDir . "\gui\video-panel\tp-zoom.png")
+tp_zoom_active := new UiElement(A_ScriptDir . "\gui\video-panel\tp-zoom-active.png")
+tp_zoom_inactive := new UiElement(A_ScriptDir . "\gui\video-panel\tp-zoom-inactive.png")
 transform_panel := new Panel(tp_header_collpased, tp_header_expanded, tp_zoom)
 
 
@@ -162,24 +120,77 @@ AssertAudio()
     }
 }
 
-TransformClip(zoom, position_x, position_y)
+ExpandTransformPanel()
 {
-    global transform_panel, inspector_area
+    global inspector_area, max_scrolls
+    global tp_header_collpased, tp_header_expanded
+    
+    scrollPoint := inspector_area.GetCenter()
+    MouseMoveAbsolute(scrollPoint)
 
-    panel := transform_panel.ScrollIntoView(inspector_area, 20)
-    if(panel)
+    scrolls := 0
+    collapsed := tp_header_collpased.FindIn(inspector_area)
+    expanded := tp_header_expanded.FindIn(inspector_area)
+    While(!collapsed && !expanded && scrolls < max_scrolls) 
+    {            
+        Send, {WheelDown}
+        scrolls++     
+        collapsed := tp_header_collpased.FindIn(inspector_area)
+        expanded := tp_header_expanded.FindIn(inspector_area)       
+    } 
+
+    if(collapsed)
     {
-        zoom := panel.GetCenter()
-        MouseMoveAbsolute(zoom)
-        ;MouseLeftClickAbsolute(zoom)
-        ;Send, zoom
+        MouseLeftDoubleClickAbsolute(collapsed.GetCenter())
+        Sleep, 500
     }
 }
 
-FindTransformPanel()
+SelectZoomX()
 {
-    global transform_panel, inspector_area
+    global inspector_area, max_scrolls
+    global tp_zoom_active, tp_zoom_inactive
+    
+    ;scrollPoint := inspector_area.GetCenter()
+    ;MouseMoveAbsolute(scrollPoint)
 
-    panel := transform_panel.first_item.FindIn(inspector_area)
-    MsgBox % panel.ToString()
+    scrolls := 0
+    active := tp_zoom_active.FindIn(inspector_area)
+    inactive := tp_zoom_inactive.FindIn(inspector_area)
+    While(!active && !inactive && scrolls < max_scrolls) 
+    {          
+        Send, {WheelDown}
+        scrolls++     
+        active := tp_zoom_active.FindIn(inspector_area)
+        inactive := tp_zoom_inactive.FindIn(inspector_area)     
+    }
+
+    zoom_label := new Point(0,0)
+    if(inactive)
+    {
+        zoom_label := inactive.GetCenter()
+    }
+    else if(active)
+    {
+        zoom_label := active.GetCenter()
+    }
+    else
+    {
+        Throw, Exception("Cannot Find Label")
+    }
+
+    zoom_x := new Point(zoom_label.left + 65, zoom_label.top)
+    MouseLeftClickAbsolute(zoom_x)
+}
+
+Transform(zoom, position_x, position_y)
+{
+    Send % zoom
+    Send {Enter}
+    Send {Tab 5}
+    Send % position_x
+    Send {Enter}
+    Send {Tab}
+    Send % position_y
+    Send {Enter}
 }

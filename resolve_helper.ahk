@@ -150,9 +150,6 @@ SelectZoomX()
 {
     global inspector_area, max_scrolls
     global tp_zoom_active, tp_zoom_inactive
-    
-    ;scrollPoint := inspector_area.GetCenter()
-    ;MouseMoveAbsolute(scrollPoint)
 
     scrolls := 0
     active := tp_zoom_active.FindIn(inspector_area)
@@ -192,5 +189,21 @@ Transform(zoom, position_x, position_y)
     Send {Enter}
     Send {Tab}
     Send % position_y
+    Send {Enter}
+}
+
+Crop(left, right, top, bottom)
+{
+    Send {Tab 28}
+    Send % left
+    Send {Enter}
+    Send {Tab 4}
+    Send % right
+    Send {Enter}
+    Send {Tab 4}
+    Send % top
+    Send {Enter}
+    Send {Tab 4}
+    Send % bottom
     Send {Enter}
 }

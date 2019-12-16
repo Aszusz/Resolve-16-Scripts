@@ -18,6 +18,7 @@ Menu, ResolveMenu, Add, Import Desktop, ImportDesktopHandler
 Menu, ResolveMenu, Add, Import Webcam, ImportWebcamHandler
 Menu, ResolveMenu, Add,
 Menu, ResolveMenu, Add, Test, TestHandler
+Menu, ResolveMenu, Add, FindTransform, FindTransformHandler
 
 #If WinActive("ahk_exe Resolve.exe")
     LWin::
@@ -60,7 +61,12 @@ Test()
     InspectorScrollTop()
     if(AssertVideo())
     {
-        FindTransformPanel()
+        TransformClip(1.25, 100, 100)
     }
-    MouseMoveAbsolute(start)
+    ;MouseMoveAbsolute(start)
+}
+
+FindTransformHandler()
+{
+    FindTransformPanel()
 }

@@ -93,33 +93,6 @@ Class UiElement
         }
     }
 
-    ScrollInto(area, max_scrolls)
-    {
-        ;MsgBox % panel.ToString()
-
-        scrollPoint := area.GetCenter()
-        MouseMoveAbsolute(scrollPoint)
-
-        scrolls := 0
-        found := this.FindIn(area)
-        while(!found && scrolls < max_scrolls)
-        {
-            Send, {WheelDown}
-            scrolls++
-            found := this.FindIn(area)
-        }
-
-        if(found)
-        {
-            Return found
-        }
-        else
-        {
-            msg := "Cannot scroll " this.path " into view"
-            ;throw Exception(msg)
-        }
-    }
-
     ToString()
     {
         Return this.path

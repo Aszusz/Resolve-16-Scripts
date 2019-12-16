@@ -4,6 +4,50 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #Include gui_lib.ahk
 
+Class Panel
+{
+    __New(header_collapsed, header_expanded, first_item)
+    {
+        this.header_collapsed := header_collapsed
+        this.header_expanded := header_expanded
+        this.first_item := first_item
+    }
+
+    ScrollIntoView(area, max_scrolls)
+    {
+        scrollPoint := area.GetCenter()
+        MouseMoveAbsolute(scrollPoint)
+
+        scrolls := 0
+        collapsed := this.header_collapsed.FindIn(area)
+        expanded := this.header_expanded.FindIn(area)
+        While(!collapsed && !expanded && scrolls < max_scrolls) 
+        {            
+            Send, {WheelDown}
+            scrolls++     
+            collapsed := this.header_collapsed.FindIn(area)
+            expanded := this.header_expanded.FindIn(area)       
+        } 
+
+        if(collapsed)
+        {
+            MouseLeftClickAbsolute(collapsed.GetCenter())
+            MouseLeftClickAbsolute(collapsed.GetCenter())
+            Sleep, 1000
+        }
+
+        first_item := this.first_item.FindIn(area)
+        While(!first_item && scrolls < max_scrolls) 
+        {            
+            Send, {WheelDown}
+            scrolls++     
+            first_item := this.first_item.FindIn(area)       
+        }
+
+        Return first_item
+    }
+}
+
 ; === GLOBAL VARIABLES ===
 
 inspector_type_area := new Rect(new Point(1545, 79), new Dimensions(248, 37))
@@ -17,7 +61,10 @@ simple_audio := new UiElement(A_ScriptDir . "\gui\inspector\simple-audio.png")
 video_inactive := new UiElement(A_ScriptDir . "\gui\video-inactive.png")
 audio_inactive := new UiElement(A_ScriptDir . "\gui\audio-inactive.png")
 
-transform_panel := new UiElement(A_ScriptDir . "\gui\video-panel\transform-panel.png")
+tp_header_collpased := new UiElement(A_ScriptDir . "\gui\video-panel\tp-header-collapsed.png")
+tp_header_expanded := new UiElement(A_ScriptDir . "\gui\video-panel\tp-header-expanded.png")
+tp_zoom := new UiElement(A_ScriptDir . "\gui\video-panel\tp-zoom.png")
+transform_panel := new Panel(tp_header_collpased, tp_header_expanded, tp_zoom)
 
 
 ; === FUNCTIONS ===
@@ -115,10 +162,24 @@ AssertAudio()
     }
 }
 
+TransformClip(zoom, position_x, position_y)
+{
+    global transform_panel, inspector_area
+
+    panel := transform_panel.ScrollIntoView(inspector_area, 20)
+    if(panel)
+    {
+        zoom := panel.GetCenter()
+        MouseMoveAbsolute(zoom)
+        ;MouseLeftClickAbsolute(zoom)
+        ;Send, zoom
+    }
+}
+
 FindTransformPanel()
 {
-    global inspector_area, transform_panel
+    global transform_panel, inspector_area
 
-    panel := transform_panel.ScrollInto(inspector_area, 15)
+    panel := transform_panel.first_item.FindIn(inspector_area)
     MsgBox % panel.ToString()
 }

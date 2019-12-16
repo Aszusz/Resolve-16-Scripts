@@ -17,7 +17,15 @@ CoordMode, Menu, Client
 Menu, ResolveMenu, Add, Import Desktop, ImportDesktopHandler
 Menu, ResolveMenu, Add, Import Webcam, ImportWebcamHandler
 Menu, ResolveMenu, Add,
-Menu, ResolveMenu, Add, Test, TestHandler
+Menu, ResolveMenu, Add, Large Left, VideoLargeLeftHandler
+Menu, ResolveMenu, Add, Large Right, VideoLargeRightHandler
+Menu, ResolveMenu, Add, Large Center, VideoLargeCenterHandler
+Menu, ResolveMenu, Add,
+Menu, ResolveMenu, Add, Small Left, VideoSmallLeftHandler
+Menu, ResolveMenu, Add, Small Right, VideoSmallRightHandler
+Menu, ResolveMenu, Add, Small Center, VideoSmallCenterHandler
+Menu, ResolveMenu, Add,
+Menu, ResolveMenu, Add, Reset To Default, ResetToDefaultHandler
 
 #If WinActive("ahk_exe Resolve.exe")
     LWin::
@@ -33,8 +41,39 @@ ImportDesktopHandler:
     ImportFiles("C:\Data\Videos\Courses\Working\Desktop")
     Return
 
-TestHandler:
-    Test()
+; Large Video
+
+VideoLargeLeftHandler:
+    SetVideoParameters("1.25", "-240", "0", "0", "0", "0", "0")
+    Return
+
+VideoLargeRightHandler:
+    SetVideoParameters("1.25", "240", "0", "0", "0", "0", "0")
+    Return
+
+VideoLargeCenterHandler:
+    SetVideoParameters("1.25", "0", "0", "0", "0", "0", "0")
+    Return
+
+; Small Video
+
+VideoSmallLeftHandler:
+    SetVideoParameters("0.25", "710", "-395", "320", "0", "0", "0")
+    Return
+
+VideoSmallRightHandler:
+    SetVideoParameters("0.25", "790", "-395", "0", "320", "0", "0")
+    Return
+
+VideoSmallCenterHandler:
+    SetVideoParameters("0.25", "750", "-395", "160", "160", "0", "0")
+    Return
+
+; Default
+
+ResetToDefaultHandler:
+    SetVideoParameters("1.0", "0", "0", "0", "0", "0", "0")
+    Return
     
     
 
@@ -53,7 +92,7 @@ ImportFiles(folder)
     Send, {Enter}
 }
 
-Test()
+SetVideoParameters(zoom, position_x, position_y, left, right, top, bottom)
 {
     start := GetMousePosition()
     OpenInspector()
@@ -62,6 +101,8 @@ Test()
     {
         ExpandTransformPanel()
         SelectZoomX()
-        Transform("1", "0", "0")
+        Transform(zoom, position_x, position_y)
+        Crop(left, right, top, bottom)
     }
+    MouseMoveAbsolute(start)
 }
